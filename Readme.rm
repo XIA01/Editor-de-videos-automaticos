@@ -1,0 +1,54 @@
+# Mi Proyecto de Video
+
+Este proyecto es un generador de video automatizado que utiliza diversas librerías de Python para procesar imágenes y audios, aplicando efectos y combinándolos en un video final. El proyecto está modularizado en diferentes archivos y carpetas para facilitar su mantenimiento y extensión.
+
+## Estructura del Proyecto
+
+mi_proyecto_video/
+├── README.md
+├── requirements.txt
+├── main.py
+├── utils/
+│   ├── __init__.py
+│   ├── audio_utils.py
+│   ├── image_utils.py
+│   └── video_utils.py
+├── tests/
+│   └── test_main.py
+└── data/
+    ├── ejecucion/
+    │   ├── 1/
+    │   │   ├── 1.wav
+    │   │   ├── music_1.mp3
+    │   │   └── imagenes/
+    │   │       ├── 00000-...png
+    │   │       └── ...
+    │   └── 2/
+    └── ...
+
+
+## Requisitos
+
+- Python 3.8+
+- MoviePy
+- PyDub
+- Pillow
+- NumPy
+- Gradio
+
+Para instalar las dependencias, ejecuta:
+
+pip install -r requirements.txt
+
+Uso
+Para ejecutar el generador de video a través de la interfaz web (Gradio), ejecuta:
+
+
+python main.py
+
+Selecciona una carpeta de ejecución (por ejemplo, "1" o "2") mediante el menú desplegable y genera el video. La ruta del video generado se mostrará en la interfaz.
+
+Contribución
+Este es un proyecto de código abierto. Siéntete libre de mejorar el código, agregar nuevos efectos o integrar nuevas funcionalidades en la carpeta utils/.
+
+¡Disfruta y contribuye!
