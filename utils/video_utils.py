@@ -3,11 +3,33 @@ import logging
 from moviepy.video.compositing.CompositeVideoClip import concatenate_videoclips
 from moviepy.audio.AudioClip import CompositeAudioClip
 from moviepy.video.VideoClip import ImageClip
-
 from utils.image_utils import procesar_imagen
 from utils.audio_utils import cargar_audio_principal, procesar_audio_fondo
 
-def crear_video_en_carpeta(carpeta):
+def obtener_resolucion(opcion, custom_width=None, custom_height=None):
+    """
+    Dada una opción de resolución (string), devuelve una tupla (ancho, alto).
+    Opciones predefinidas:
+      - "1920x1080" -> (1920, 1080)
+      - "786x480"   -> (786, 480)
+      - "Vertical"  -> (720, 1280)
+      - "Personalizado" -> (custom_width, custom_height) (si se proporcionan)
+    """
+    if opcion == "1920x1080":
+        return (1920, 1080)
+    elif opcion == "786x480":
+        return (786, 480)
+    elif opcion == "Vertical":
+        return (720, 1280)
+    elif opcion == "Personalizado":
+        if custom_width is not None and custom_height is not None:
+            return (int(custom_width), int(custom_height))
+        else:
+            raise ValueError("Debe proporcionar custom_width y custom_height para opción 'Personalizado'")
+    else:
+        raise ValueError("Opción de resolución desconocida")
+
+def crear_video_en_carpeta(carpeta, resolucion=(1920,1080)):
     logging.info(f"Iniciando procesamiento de la carpeta: {carpeta}")
 
     ruta_imagenes = os.path.join(carpeta, "imagenes")
@@ -62,7 +84,12 @@ def crear_video_en_carpeta(carpeta):
     for idx, imagen in enumerate(lista_imagenes, start=1):
         ruta = os.path.join(ruta_imagenes, imagen)
         logging.info(f"Procesando imagen {idx}/{num_imagenes}: {ruta}")
-        img_array = procesar_imagen(ruta, tamano_final=(1920, 1080))
+        img_array = None
+        try:
+            img_array = __import__("utils.image_utils", fromlist=["procesar_imagen"]).procesar_imagen(ruta, tamano_final=resolucion)
+        except Exception as e:
+            logging.exception(f"Error al procesar la imagen: {ruta}")
+            continue
         if img_array is None:
             continue
         clip = ImageClip(img_array, duration=duracion_imagen)
@@ -81,7 +108,7 @@ def crear_video_en_carpeta(carpeta):
 
     logging.info("Ajustando audios y asignándolos al vídeo...")
     try:
-        audio_bg = audio_bg[0:duracion_total]  # Recortar usando slicing
+        audio_bg = audio_bg[0:duracion_total]
         audio_final = CompositeAudioClip([audio_principal, audio_bg])
         video = video.with_audio(audio_final)
     except Exception as e:
@@ -98,7 +125,7 @@ def crear_video_en_carpeta(carpeta):
         logging.exception("Error al escribir el archivo de vídeo")
         return None
 
-def procesar_ejecuciones(ruta_ejecucion):
+def procesar_ejecuciones(ruta_ejecucion, resolucion=(1920,1080)):
     if not os.path.exists(ruta_ejecucion):
         logging.error(f"La carpeta '{ruta_ejecucion}' no existe.")
         return None
@@ -113,7 +140,7 @@ def procesar_ejecuciones(ruta_ejecucion):
     resultados = {}
     for carpeta in sorted(carpetas):
         logging.info(f"Procesando carpeta: {carpeta}")
-        salida = crear_video_en_carpeta(carpeta)
+        salida = crear_video_en_carpeta(carpeta, resolucion)
         if salida:
             resultados[carpeta] = salida
     return resultados

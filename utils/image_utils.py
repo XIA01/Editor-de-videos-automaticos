@@ -4,8 +4,14 @@ import logging
 
 def procesar_imagen(ruta_imagen, tamano_final=(1920, 1080)):
     """
-    Abre la imagen usando Pillow, la redimensiona para que su altura sea 1080 (manteniendo la relación de aspecto)
-    y la centra sobre un fondo negro de tamaño 1920x1080.
+    Abre la imagen usando Pillow, la redimensiona en modo "fill" para que cubra completamente
+    el tamaño final (tamano_final) y luego recorta el exceso para centrar la imagen.
+    
+    Esto asegura que, por ejemplo:
+      - En resoluciones horizontales, la imagen se escale de modo que no queden bordes negros y se recorte
+        (si es necesario) para llenar la pantalla.
+      - En resoluciones verticales, la altura de la imagen se ajusta al valor final y se recortan los laterales.
+      
     Devuelve un arreglo NumPy que se puede usar para crear un ImageClip.
     """
     try:
@@ -14,14 +20,25 @@ def procesar_imagen(ruta_imagen, tamano_final=(1920, 1080)):
         logging.exception(f"No se pudo abrir la imagen: {ruta_imagen}")
         return None
 
-    w, h = im.size
-    nuevo_alto = 1080
-    escala = nuevo_alto / h
-    nuevo_ancho = int(w * escala)
-    # Redimensionar usando LANCZOS (en Pillow 10+)
-    im_resized = im.resize((nuevo_ancho, nuevo_alto), Image.Resampling.LANCZOS)
-    fondo = Image.new("RGB", tamano_final, (0, 0, 0))
-    x_offset = (tamano_final[0] - nuevo_ancho) // 2
-    y_offset = (tamano_final[1] - nuevo_alto) // 2
-    fondo.paste(im_resized, (x_offset, y_offset))
-    return np.array(fondo)
+    original_width, original_height = im.size
+    final_width, final_height = tamano_final
+
+    # Calcular los factores de escala para que la imagen cubra completamente el área deseada (modo fill)
+    scale_w = final_width / original_width
+    scale_h = final_height / original_height
+    scale = max(scale_w, scale_h)
+
+    new_width = int(original_width * scale)
+    new_height = int(original_height * scale)
+    
+    # Redimensionar la imagen usando LANCZOS (alta calidad)
+    im_resized = im.resize((new_width, new_height), Image.Resampling.LANCZOS)
+    
+    # Calcular el área central para recortar
+    left = (new_width - final_width) // 2
+    top = (new_height - final_height) // 2
+    right = left + final_width
+    bottom = top + final_height
+    
+    im_cropped = im_resized.crop((left, top, right, bottom))
+    return np.array(im_cropped)
