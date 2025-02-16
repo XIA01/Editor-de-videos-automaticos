@@ -1,6 +1,6 @@
 # Mi Proyecto de Video
 
-Este proyecto es un generador de video automatizado que utiliza diversas librerías de Python para procesar imágenes y audios, aplicando efectos y combinándolos en un video final. El proyecto está modularizado en diferentes archivos y carpetas para facilitar su mantenimiento y extensión.
+Este proyecto es un generador de video automatizado que utiliza diversas librerías de Python para procesar imágenes y audios y combinándolos en un video final. El proyecto está modularizado en diferentes archivos y carpetas para facilitar su mantenimiento y extensión.
 
 ## Estructura del Proyecto
 
